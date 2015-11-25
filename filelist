@@ -1,0 +1,6 @@
+$SVNET_HOME/src/library/svnet_reg.sv
+$SVNET_HOME/src/library/svnet_ram.sv
+$SVNET_HOME/src/library/svnet_pipeline_free_space_manager.sv
+$SVNET_HOME/src/library/svnet_pipeline_used_space_manager.sv
+$SVNET_HOME/src/library/svnet_reg_fifo.sv
+$SVNET_HOME/src/library/svnet_ram_fifo.sv

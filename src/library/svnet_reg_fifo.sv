@@ -14,7 +14,7 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-module svnet_ram_fifo
+module svnet_reg_fifo
 #(
     WIDTH = 1,
     DEPTH = 1
@@ -33,19 +33,37 @@ module svnet_ram_fifo
     input logic read
 );
 
-    assert property(@(posedge clk) disable iff (!rst_n)
+    write_error : assert property(@(posedge clk) disable iff (!rst_n)
     write |-> free_space);
 
-    assert property(@(posedge clk) disable iff (!rst_n)
+    read_error : assert property(@(posedge clk) disable iff (!rst_n)
     read |-> used_space);
 
-endmodule : svnet_ram_fifo
+    logic [$clog2(DEPTH)-0:0] `SVNET_REG(space);
+    logic [DEPTH-1:0][WIDTH-1:0] `SVNET_REG(registers);
 
-`define SVNET_RAM_FIFO(name, depth) name``_write_data, name``_read_data; \
+    always_comb begin
+        free_space = DEPTH - space_q;
+        used_space = space_q;
+        space = space_q + write - read;
+        registers = registers_q;
+        if(write) registers[space_q] = write_data;
+        if(read) registers = registers_q[DEPTH-1:1];
+        read_data = registers_q;
+    end
+
+    final if(rst_n) finish_error : assert(!space_q);
+
+endmodule : svnet_reg_fifo
+
+`define SVNET_REG_FIFO_W2W_DELAY 1 // write-to-write delay
+`define SVNET_REG_FIFO_R2R_DELAY 1 // read-to-read delay
+
+`define SVNET_REG_FIFO(name, depth) name``_write_data, name``_read_data; \
 logic [$clog2(depth)-0:0] name``_free_space, name``_used_space; \
 logic name``_write, name``_read; \
-svnet_ram_fifo #(.WIDTH($bits(name``_read_data)), .DEPTH(depth)) \
-name``_ram_fifo (.clk(clk), .rst_n(rst_n), \
-.write_data(name``_write_data), .read_data(name``_read_data) \
+svnet_reg_fifo #(.WIDTH($bits(name``_read_data)), .DEPTH(depth)) \
+name``_reg_fifo (.clk(clk), .rst_n(rst_n), \
+.write_data(name``_write_data), .read_data(name``_read_data), \
 .free_space(name``_free_space), .used_space(name``_used_space), \
 .write(name``_write), .read(name``_read))

@@ -36,10 +36,10 @@ module svnet_ram
     output logic [WIDTH-1:0] read_data
 );
 
-    assert property(@(posedge clk) disable iff (!rst_n)
+    write_error : assert property(@(posedge clk) disable iff (!rst_n)
     write |-> (write_address < DEPTH));
 
-    assert property(@(posedge clk) disable iff (!rst_n)
+    read_error : assert property(@(posedge clk) disable iff (!rst_n)
     read |-> (read_address < DEPTH));
 
     logic `SVNET_REG_INPUT(write);
@@ -71,7 +71,7 @@ logic name``_write, name``_read, name``_read_data_valid; \
 logic [$clog2(DEPTH)-1:0] name``_write_address, name``_read_address; \
 svnet_ram #(.WIDTH($bits(name``_read_data)), .DEPTH(depth)) \
 name``_ram (.clk(clk), .rst_n(rst_n), \
-.write_data(name``_write_data), .read_data(name``_read_data) \
+.write_data(name``_write_data), .read_data(name``_read_data), \
 .write(name``_write), .read(name``_read), \
 .write_address(name``_write_address), .read_address(name``_read_address), \
 .read_data_valid(name``_read_data_valid))

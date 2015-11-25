@@ -1,0 +1,17 @@
+#!/bin/sh
+export SVNET_HOME="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+
+if [ ! -d build ]; then
+    mkdir build
+fi
+
+cd build
+
+if [ ! -d work ]; then
+    vlib work
+fi
+
+vlog -mfcu -sv -quiet \
+-suppress 2186 -suppress 2583 \
++define+SVNET_NO_RESET \
+-f ../filelist
