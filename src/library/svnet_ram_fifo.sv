@@ -39,47 +39,87 @@ module svnet_ram_fifo
     read_error : assert property(@(posedge clk) disable iff (!rst_n)
     read |-> used_space);
 
-    localparam B_DEPTH =
-    `SVNET_REG_FIFO_R2R_DELAY+`SVNET_RAM_R2R_DELAY+`SVNET_REG_FIFO_W2W_DELAY;
+    localparam B_DEPTH = `SVNET_RAM_R2V_DELAY + `SVNET_REG_FIFO_W2R_DELAY;
+    localparam R_DEPTH = DEPTH - B_DEPTH;
 
-    localparam R_DEPTH =
-    DEPTH - B_DEPTH;
+    generate if(DEPTH <= B_DEPTH) begin
 
-    logic [$clog2(DEPTH)-0:0] `SVNET_REG(space);
-    logic [WIDTH-1:0] `SVNET_RAM(ram, R_DEPTH);
-    logic [$clog2(R_DEPTH)-1:0] `SVNET_REG(ram_write_pointer);
-    logic [$clog2(R_DEPTH)-1:0] `SVNET_REG(ram_read_pointer);
-    logic [$clog2(R_DEPTH)-0:0] `SVNET_REG(ram_space);
-    logic [WIDTH-1:0] `SVNET_REG_FIFO(bypass, B_DEPTH);
+        logic [WIDTH-1:0] `SVNET_REG_FIFO(bypass, DEPTH);
 
-    always_comb begin
-        automatic logic ram_select = ram_space_q||(bypass_used_space==B_DEPTH); // broken???
-        free_space = DEPTH - space_q; // broken (gap errors)
-        used_space = space_q; // broken (gap errors)
-        space = space_q + write - read; // broken (gap errors)
-        ram_write = write && ram_select;
-        ram_write_address = ram_write_pointer_q;
-        ram_write_data = write_data;
-        ram_read = ram_space_q && (bypass_used_space != B_DEPTH); // broken???
-        ram_read_address = ram_read_pointer_q;
-        ram_write_pointer = ram_write_pointer_q + ram_write;
-        if(ram_write_pointer == R_DEPTH) ram_write_pointer = '0;
-        ram_read_pointer = ram_read_pointer_q + ram_read;
-        if(ram_read_pointer == R_DEPTH) ram_read_pointer = '0;
-        ram_space = ram_space_q + ram_write - ram_read_data_valid; // broken (gap errors)
-        bypass_write = ram_read_data_valid || (write && (!ram_select));
-        bypass_write_data = ram_read_data_valid ? ram_read_data : write_data;
-        read_data = bypass_read_data;
-        bypass_read = read;
-    end
+        always_comb begin
+            free_space = bypass_free_space;
+            bypass_write = write;
+            bypass_write_data = write_data;
+            used_space = bypass_used_space;
+            read_data = bypass_read_data;
+            bypass_read = read;
+        end
 
-    final if(rst_n) finish_error : assert(!space_q);
-    final if(rst_n) finish_error_2 : assert(!ram_space_q);
+    end else begin
+
+        logic [WIDTH-1:0] `SVNET_RAM(ram, R_DEPTH);
+        logic [$clog2(R_DEPTH)-0:0] `SVNET_REG(ram_w2r_used_space);
+        logic [`SVNET_RAM_R2V_DELAY-1:0] `SVNET_REG(ram_r2v_used_space);
+        logic [$clog2(R_DEPTH)-1:0] `SVNET_REG(ram_write_pointer);
+        logic [$clog2(R_DEPTH)-1:0] `SVNET_REG(ram_read_pointer);
+        logic [WIDTH-1:0] `SVNET_REG_FIFO(bypass, B_DEPTH);
+        logic [$clog2(DEPTH)-0:0] `SVNET_REG_OUTPUT_I(free_space, DEPTH);
+        logic [$clog2(DEPTH)-0:0] `SVNET_REG_OUTPUT(used_space);
+
+        always_comb begin
+
+            automatic logic ram_select =
+            ram_w2r_used_space_q||ram_r2v_used_space_q||(!bypass_free_space);
+
+            ram_write = write && ram_select;
+            ram_write_data = write_data;
+            ram_write_address = ram_write_pointer_q;
+
+            ram_read = ram_w2r_used_space_q && (read || bypass_free_space);
+            ram_read_address = ram_read_pointer_q;
+
+            ram_w2r_used_space =
+            ram_w2r_used_space_q + ram_write - ram_read;
+
+            ram_r2v_used_space =
+            {ram_r2v_used_space_q[`SVNET_RAM_R2V_DELAY-2:0], ram_read};
+
+            ram_write_pointer = ram_write_pointer_q + ram_write;
+            if(ram_write_pointer == R_DEPTH) ram_write_pointer = '0;
+
+            ram_read_pointer = ram_read_pointer_q + ram_read;
+            if(ram_read_pointer == R_DEPTH) ram_read_pointer = '0;
+
+            bypass_write = ram_read_data_valid || (write && (!ram_select));
+            bypass_write_data = ram_read_data_valid?ram_read_data:write_data;
+
+            read_data = bypass_read_data;
+            bypass_read = read;
+
+            free_space_d = free_space - write + read;
+            used_space_d = bypass_used_space + bypass_write - bypass_read;
+
+            if(used_space_d >= `SVNET_REG_FIFO_W2R_DELAY)
+            for(int i = `SVNET_RAM_R2V_DELAY - 1,
+            j = used_space_d - `SVNET_REG_FIFO_W2R_DELAY;
+            i >= 0; i--)
+            if(ram_r2v_used_space[i]) used_space_d += 1;
+            else if(j) j -= 1; else break;
+
+            if(used_space_d>=(`SVNET_RAM_R2V_DELAY+`SVNET_REG_FIFO_W2R_DELAY))
+            used_space_d += ram_w2r_used_space; // ^ not necessarily B_DEPTH
+
+        end
+
+    end endgenerate
+
+    final if(rst_n) finish_error_0 : assert(free_space == DEPTH);
+    final if(rst_n) finish_error_1 : assert(!used_space);
 
 endmodule : svnet_ram_fifo
 
-`define SVNET_RAM_FIFO_W2W_DELAY 1 // write-to-write delay
-`define SVNET_RAM_FIFO_R2R_DELAY 1 // read-to-read delay
+`define SVNET_RAM_FIFO_W2R_DELAY 1 // write-to-read delay
+`define SVNET_RAM_FIFO_R2V_DELAY 0 // read-to-valid delay
 
 `define SVNET_RAM_FIFO(name, depth) name``_write_data, name``_read_data; \
 logic [$clog2(depth)-0:0] name``_free_space, name``_used_space; \

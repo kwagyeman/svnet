@@ -16,8 +16,8 @@
 
 module svnet_ram
 #(
-    DEPTH = 1,
-    WIDTH = 1
+    WIDTH = 1,
+    DEPTH = 1
 )
 (
     input logic clk, rst_n,
@@ -63,8 +63,8 @@ module svnet_ram
 
 endmodule : svnet_ram
 
-`define SVNET_RAM_W2W_DELAY 2 // write-to-write delay
-`define SVNET_RAM_R2R_DELAY 2 // read-to-read delay
+`define SVNET_RAM_W2R_DELAY 1 // write-to-read delay
+`define SVNET_RAM_R2V_DELAY 2 // read-to-valid delay
 
 `define SVNET_RAM(name, depth) name``_write_data, name``_read_data; \
 logic name``_write, name``_read, name``_read_data_valid; \

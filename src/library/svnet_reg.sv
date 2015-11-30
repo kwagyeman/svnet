@@ -18,7 +18,7 @@ module svnet_reg
 #(
     WIDTH = 1,
     DEPTH = 1,
-
+    INIT = '0,
     SYNC = 0
 )
 (
@@ -28,16 +28,16 @@ module svnet_reg
     output logic [WIDTH-1:0] q
 );
 
-    if(DEPTH) begin
+    generate if(DEPTH) begin
         `ifndef SVNET_NO_RESET
             logic [DEPTH-1:0][WIDTH-1:0] q_int = 'x;
             `ifndef SYNTHESIS
-                always_latch if(!rst_n) force q_int = '0; else release q_int;
+                always_latch if(!rst_n) force q_int = INIT; else release q_int;
             `endif
             always_ff @(posedge clk or negedge rst_n) begin
-                if(!rst_n) q_int <= '0; else
+                if(!rst_n) q_int <= INIT; else
         `else
-            logic [DEPTH-1:0][WIDTH-1:0] q_int = '0;
+            logic [DEPTH-1:0][WIDTH-1:0] q_int = INIT;
             always_ff @(posedge clk) begin
         `endif
                 begin
@@ -46,21 +46,13 @@ module svnet_reg
                 end
             end
         always_comb q = q_int[DEPTH-1];
-    end else always_comb q = d;
+    end else always_comb q = d; endgenerate
 
 endmodule : svnet_reg
 
 `define SVNET_REG(variable) variable, variable``_q; \
 svnet_reg #(.WIDTH($bits(variable))) \
 variable``_reg (.clk(clk), .rst_n(rst_n), .d(variable), .q(variable``_q))
-
-`define SVNET_REG_INPUT(variable) variable``_q; \
-svnet_reg #(.WIDTH($bits(variable))) \
-variable``_reg (.clk(clk), .rst_n(rst_n), .d(variable), .q(variable``_q))
-
-`define SVNET_REG_OUTPUT(variable) variable``_d; \
-svnet_reg #(.WIDTH($bits(variable))) \
-variable``_reg (.clk(clk), .rst_n(rst_n), .d(variable``_d), .q(variable))
 
 `define SVNET_REG_PIPELINE(variable, depth) variable, variable``_q; \
 svnet_reg #(.WIDTH($bits(variable)), .DEPTH(depth)) \
@@ -69,3 +61,63 @@ variable``_reg (.clk(clk), .rst_n(rst_n), .d(variable), .q(variable``_q))
 `define SVNET_REG_SYNCHRONIZER(variable) variable, variable``_q; \
 svnet_reg #(.WIDTH($bits(variable)), .DEPTH(2), .SYNC(1)) \
 variable``_reg (.clk(clk), .rst_n(rst_n), .d(variable), .q(variable``_q))
+
+`define SVNET_REG_INPUT(variable) variable``_q; \
+svnet_reg #(.WIDTH($bits(variable))) \
+variable``_reg (.clk(clk), .rst_n(rst_n), .d(variable), .q(variable``_q))
+
+`define SVNET_REG_INPUT_PIPELINE(variable, depth) variable``_q; \
+svnet_reg #(.WIDTH($bits(variable)), .DEPTH(depth)) \
+variable``_reg (.clk(clk), .rst_n(rst_n), .d(variable), .q(variable``_q))
+
+`define SVNET_REG_INPUT_SYNCHRONIZER(variable) variable``_q; \
+svnet_reg #(.WIDTH($bits(variable)), .DEPTH(2), .SYNC(1)) \
+variable``_reg (.clk(clk), .rst_n(rst_n), .d(variable), .q(variable``_q))
+
+`define SVNET_REG_OUTPUT(variable) variable``_d; \
+svnet_reg #(.WIDTH($bits(variable))) \
+variable``_reg (.clk(clk), .rst_n(rst_n), .d(variable``_d), .q(variable))
+
+`define SVNET_REG_OUTPUT_PIPELINE(variable, depth) variable``_d; \
+svnet_reg #(.WIDTH($bits(variable)), .DEPTH(depth)) \
+variable``_reg (.clk(clk), .rst_n(rst_n), .d(variable``_d), .q(variable))
+
+`define SVNET_REG_OUTPUT_SYNCHRONIZER(variable) variable``_d; \
+svnet_reg #(.WIDTH($bits(variable)), .DEPTH(2), .SYNC(1)) \
+variable``_reg (.clk(clk), .rst_n(rst_n), .d(variable``_d), .q(variable))
+
+`define SVNET_REG_I(variable, init) variable, variable``_q; \
+svnet_reg #(.WIDTH($bits(variable)), .INIT(init)) \
+variable``_reg (.clk(clk), .rst_n(rst_n), .d(variable), .q(variable``_q))
+
+`define SVNET_REG_PIPELINE_I(variable, depth, init) variable, variable``_q; \
+svnet_reg #(.WIDTH($bits(variable)), .DEPTH(depth), .INIT(init)) \
+variable``_reg (.clk(clk), .rst_n(rst_n), .d(variable), .q(variable``_q))
+
+`define SVNET_REG_SYNCHRONIZER_I(variable, init) variable, variable``_q; \
+svnet_reg #(.WIDTH($bits(variable)), .DEPTH(2), .INIT(init), .SYNC(1)) \
+variable``_reg (.clk(clk), .rst_n(rst_n), .d(variable), .q(variable``_q))
+
+`define SVNET_REG_INPUT_I(variable, init) variable``_q; \
+svnet_reg #(.WIDTH($bits(variable)), .INIT(init)) \
+variable``_reg (.clk(clk), .rst_n(rst_n), .d(variable), .q(variable``_q))
+
+`define SVNET_REG_INPUT_PIPELINE_I(variable, depth, init) variable``_q; \
+svnet_reg #(.WIDTH($bits(variable)), .DEPTH(depth), .INIT(init)) \
+variable``_reg (.clk(clk), .rst_n(rst_n), .d(variable), .q(variable``_q))
+
+`define SVNET_REG_INPUT_SYNCHRONIZER_I(variable, init) variable``_q; \
+svnet_reg #(.WIDTH($bits(variable)), .DEPTH(2), .INIT(init), .SYNC(1)) \
+variable``_reg (.clk(clk), .rst_n(rst_n), .d(variable), .q(variable``_q))
+
+`define SVNET_REG_OUTPUT_I(variable, init) variable``_d; \
+svnet_reg #(.WIDTH($bits(variable)), .INIT(init)) \
+variable``_reg (.clk(clk), .rst_n(rst_n), .d(variable``_d), .q(variable))
+
+`define SVNET_REG_OUTPUT_PIPELINE_I(variable, depth, init) variable``_d; \
+svnet_reg #(.WIDTH($bits(variable)), .DEPTH(depth), .INIT(init)) \
+variable``_reg (.clk(clk), .rst_n(rst_n), .d(variable``_d), .q(variable))
+
+`define SVNET_REG_OUTPUT_SYNCHRONIZER_I(variable, init) variable``_d; \
+svnet_reg #(.WIDTH($bits(variable)), .DEPTH(2), .INIT(init), .SYNC(1)) \
+variable``_reg (.clk(clk), .rst_n(rst_n), .d(variable``_d), .q(variable))
