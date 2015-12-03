@@ -1,3 +1,5 @@
+$SVNET_HOME/src/library/svnet_define_max.sv
+$SVNET_HOME/src/library/svnet_define_min.sv
 $SVNET_HOME/src/library/svnet_reg.sv
 $SVNET_HOME/src/library/svnet_ram.sv
 $SVNET_HOME/src/library/svnet_reg_fifo.sv

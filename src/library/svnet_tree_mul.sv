@@ -96,16 +96,15 @@ module svnet_tree_mul
 (
     input logic clk, rst_n,
 
-    input logic i_valid,
+    input logic i_data_valid,
     input logic [COUNT-1:0][WIDTH-1:0] i_data,
 
-    output logic o_valid,
+    output logic o_data_valid,
     output logic [(COUNT*WIDTH)-1:0] o_data
 );
 
-    logic `SVNET_REG_OUTPUT_PIPELINE(o_valid, `SVNET_TREE_MUL_DELAY(COUNT));
-
-    always_comb o_valid_d = i_valid;
+    logic`SVNET_REG_OUTPUT_PIPELINE(o_data_valid,`SVNET_TREE_MUL_DELAY(COUNT));
+    always_comb o_data_valid_d = i_data_valid;
 
     generate if(COUNT == 1) begin
         always_comb o_data = i_data;
@@ -125,3 +124,12 @@ module svnet_tree_mul
     end endgenerate
 
 endmodule : svnet_tree_mul
+
+`define SVNET_TREE_MUL(name, width, count) \
+logic name``_i_data_valid, name``_o_data_valid; \
+logic [(count)-1:0][(width)-1:0] name``_i_data; \
+logic [((count)*(width))-1:0] name``_o_data \
+svnet_tree_mul #(.WIDTH(width), .COUNT(count)) \
+name``_tree_mul (.clk(clk), .rst_n(rst_n), \
+.i_data_valid(name``_i_data_valid), .i_data(name``_i_data), \
+.o_data_valid(name``_o_data_valid), .o_data(name``_o_data))
