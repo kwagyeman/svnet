@@ -8,3 +8,6 @@ $SVNET_HOME/src/library/svnet_pipeline_free_space_manager.sv
 $SVNET_HOME/src/library/svnet_pipeline_used_space_manager.sv
 $SVNET_HOME/src/library/svnet_tree_add.sv
 $SVNET_HOME/src/library/svnet_tree_mul.sv
+$SVNET_HOME/src/library/svnet_tree_max.sv
+$SVNET_HOME/src/library/svnet_tree_min.sv
+$SVNET_HOME/src/units/svnet_convolution.sv

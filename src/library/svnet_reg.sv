@@ -90,41 +90,41 @@ name``_reg (.clk(clk), .rst_n(rst_n), .enable('1), .d(name``_d), .q(name))
 
 ///////////////////////////////////////////////////////////////////////////////
 
-`define SVNET_REG_E(name, enable) name, name``_q; \
+`define SVNET_REG_E(name, en) name, name``_q; \
 svnet_reg #(.WIDTH($bits(name))) \
-name``_reg (.clk(clk), .rst_n(rst_n), .enable(enable), .d(name), .q(name``_q))
+name``_reg (.clk(clk), .rst_n(rst_n), .enable(en), .d(name), .q(name``_q))
 
-`define SVNET_REG_PIPELINE_E(name, depth, enable) name, name``_q; \
+`define SVNET_REG_PIPELINE_E(name, depth, en) name, name``_q; \
 svnet_reg #(.WIDTH($bits(name)), .DEPTH(depth)) \
-name``_reg (.clk(clk), .rst_n(rst_n), .enable(enable), .d(name), .q(name``_q))
+name``_reg (.clk(clk), .rst_n(rst_n), .enable(en), .d(name), .q(name``_q))
 
-`define SVNET_REG_SYNCHRONIZER_E(name, enable) name, name``_q; \
+`define SVNET_REG_SYNCHRONIZER_E(name, en) name, name``_q; \
 svnet_reg #(.WIDTH($bits(name)), .DEPTH(2), .SYNC(1)) \
-name``_reg (.clk(clk), .rst_n(rst_n), .enable(enable), .d(name), .q(name``_q))
+name``_reg (.clk(clk), .rst_n(rst_n), .enable(en), .d(name), .q(name``_q))
 
-`define SVNET_REG_INPUT_E(name, enable) name``_q; \
+`define SVNET_REG_INPUT_E(name, en) name``_q; \
 svnet_reg #(.WIDTH($bits(name))) \
-name``_reg (.clk(clk), .rst_n(rst_n), .enable(enable), .d(name), .q(name``_q))
+name``_reg (.clk(clk), .rst_n(rst_n), .enable(en), .d(name), .q(name``_q))
 
-`define SVNET_REG_INPUT_PIPELINE_E(name, depth, enable) name``_q; \
+`define SVNET_REG_INPUT_PIPELINE_E(name, depth, en) name``_q; \
 svnet_reg #(.WIDTH($bits(name)), .DEPTH(depth)) \
-name``_reg (.clk(clk), .rst_n(rst_n), .enable(enable), .d(name), .q(name``_q))
+name``_reg (.clk(clk), .rst_n(rst_n), .enable(en), .d(name), .q(name``_q))
 
-`define SVNET_REG_INPUT_SYNCHRONIZER_E(name, enable) name``_q; \
+`define SVNET_REG_INPUT_SYNCHRONIZER_E(name, en) name``_q; \
 svnet_reg #(.WIDTH($bits(name)), .DEPTH(2), .SYNC(1)) \
-name``_reg (.clk(clk), .rst_n(rst_n), .enable(enable), .d(name), .q(name``_q))
+name``_reg (.clk(clk), .rst_n(rst_n), .enable(en), .d(name), .q(name``_q))
 
-`define SVNET_REG_OUTPUT_E(name, enable) name``_d; \
+`define SVNET_REG_OUTPUT_E(name, en) name``_d; \
 svnet_reg #(.WIDTH($bits(name))) \
-name``_reg (.clk(clk), .rst_n(rst_n), .enable(enable), .d(name``_d), .q(name))
+name``_reg (.clk(clk), .rst_n(rst_n), .enable(en), .d(name``_d), .q(name))
 
-`define SVNET_REG_OUTPUT_PIPELINE_E(name, depth, enable) name``_d; \
+`define SVNET_REG_OUTPUT_PIPELINE_E(name, depth, en) name``_d; \
 svnet_reg #(.WIDTH($bits(name)), .DEPTH(depth)) \
-name``_reg (.clk(clk), .rst_n(rst_n), .enable(enable), .d(name``_d), .q(name))
+name``_reg (.clk(clk), .rst_n(rst_n), .enable(en), .d(name``_d), .q(name))
 
-`define SVNET_REG_OUTPUT_SYNCHRONIZER_E(name, enable) name``_d; \
+`define SVNET_REG_OUTPUT_SYNCHRONIZER_E(name, en) name``_d; \
 svnet_reg #(.WIDTH($bits(name)), .DEPTH(2), .SYNC(1)) \
-name``_reg (.clk(clk), .rst_n(rst_n), .enable(enable), .d(name``_d), .q(name))
+name``_reg (.clk(clk), .rst_n(rst_n), .enable(en), .d(name``_d), .q(name))
 
 ///////////////////////////////////////////////////////////////////////////////
 
@@ -166,38 +166,38 @@ name``_reg (.clk(clk), .rst_n(rst_n), .enable('1), .d(name``_d), .q(name))
 
 ///////////////////////////////////////////////////////////////////////////////
 
-`define SVNET_REG_E_I(name, enable, init) name, name``_q; \
+`define SVNET_REG_E_I(name, en, init) name, name``_q; \
 svnet_reg #(.WIDTH($bits(name)), .INIT(init)) \
-name``_reg (.clk(clk), .rst_n(rst_n), .enable(enable), .d(name), .q(name``_q))
+name``_reg (.clk(clk), .rst_n(rst_n), .enable(en), .d(name), .q(name``_q))
 
-`define SVNET_REG_PIPELINE_E_I(name, depth, enable, init) name, name``_q; \
+`define SVNET_REG_PIPELINE_E_I(name, depth, en, init) name, name``_q; \
 svnet_reg #(.WIDTH($bits(name)), .DEPTH(depth), .INIT(init)) \
-name``_reg (.clk(clk), .rst_n(rst_n), .enable(enable), .d(name), .q(name``_q))
+name``_reg (.clk(clk), .rst_n(rst_n), .enable(en), .d(name), .q(name``_q))
 
-`define SVNET_REG_SYNCHRONIZER_E_I(name, enable, init) name, name``_q; \
+`define SVNET_REG_SYNCHRONIZER_E_I(name, en, init) name, name``_q; \
 svnet_reg #(.WIDTH($bits(name)), .DEPTH(2), .INIT(init), .SYNC(1)) \
-name``_reg (.clk(clk), .rst_n(rst_n), .enable(enable), .d(name), .q(name``_q))
+name``_reg (.clk(clk), .rst_n(rst_n), .enable(en), .d(name), .q(name``_q))
 
-`define SVNET_REG_INPUT_E_I(name, enable, init) name``_q; \
+`define SVNET_REG_INPUT_E_I(name, en, init) name``_q; \
 svnet_reg #(.WIDTH($bits(name)), .INIT(init)) \
-name``_reg (.clk(clk), .rst_n(rst_n), .enable(enable), .d(name), .q(name``_q))
+name``_reg (.clk(clk), .rst_n(rst_n), .enable(en), .d(name), .q(name``_q))
 
-`define SVNET_REG_INPUT_PIPELINE_E_I(name, depth, enable, init) name``_q; \
+`define SVNET_REG_INPUT_PIPELINE_E_I(name, depth, en, init) name``_q; \
 svnet_reg #(.WIDTH($bits(name)), .DEPTH(depth), .INIT(init)) \
-name``_reg (.clk(clk), .rst_n(rst_n), .enable(enable), .d(name), .q(name``_q))
+name``_reg (.clk(clk), .rst_n(rst_n), .enable(en), .d(name), .q(name``_q))
 
-`define SVNET_REG_INPUT_SYNCHRONIZER_E_I(name, enable, init) name``_q; \
+`define SVNET_REG_INPUT_SYNCHRONIZER_E_I(name, en, init) name``_q; \
 svnet_reg #(.WIDTH($bits(name)), .DEPTH(2), .INIT(init), .SYNC(1)) \
-name``_reg (.clk(clk), .rst_n(rst_n), .enable(enable), .d(name), .q(name``_q))
+name``_reg (.clk(clk), .rst_n(rst_n), .enable(en), .d(name), .q(name``_q))
 
-`define SVNET_REG_OUTPUT_E_I(name, enable, init) name``_d; \
+`define SVNET_REG_OUTPUT_E_I(name, en, init) name``_d; \
 svnet_reg #(.WIDTH($bits(name)), .INIT(init)) \
-name``_reg (.clk(clk), .rst_n(rst_n), .enable(enable), .d(name``_d), .q(name))
+name``_reg (.clk(clk), .rst_n(rst_n), .enable(en), .d(name``_d), .q(name))
 
-`define SVNET_REG_OUTPUT_PIPELINE_E_I(name, depth, enable, init) name``_d; \
+`define SVNET_REG_OUTPUT_PIPELINE_E_I(name, depth, en, init) name``_d; \
 svnet_reg #(.WIDTH($bits(name)), .DEPTH(depth), .INIT(init)) \
-name``_reg (.clk(clk), .rst_n(rst_n), .enable(enable), .d(name``_d), .q(name))
+name``_reg (.clk(clk), .rst_n(rst_n), .enable(en), .d(name``_d), .q(name))
 
-`define SVNET_REG_OUTPUT_SYNCHRONIZER_E_I(name, enable, init) name``_d; \
+`define SVNET_REG_OUTPUT_SYNCHRONIZER_E_I(name, en, init) name``_d; \
 svnet_reg #(.WIDTH($bits(name)), .DEPTH(2), .INIT(init), .SYNC(1)) \
-name``_reg (.clk(clk), .rst_n(rst_n), .enable(enable), .d(name``_d), .q(name))
+name``_reg (.clk(clk), .rst_n(rst_n), .enable(en), .d(name``_d), .q(name))

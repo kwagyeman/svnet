@@ -43,12 +43,12 @@ module svnet_ram
     read |-> (read_address < DEPTH));
 
     logic `SVNET_REG_INPUT(write);
-    logic [$clog2(DEPTH)-1:0] `SVNET_REG_INPUT(write_address);
-    logic [WIDTH-1:0] `SVNET_REG_INPUT(write_data);
+    logic [$clog2(DEPTH)-1:0] `SVNET_REG_INPUT_E(write_address, write);
+    logic [WIDTH-1:0] `SVNET_REG_INPUT_E(write_data, write);
     logic `SVNET_REG_INPUT(read);
-    logic [$clog2(DEPTH)-1:0] `SVNET_REG_INPUT(read_address);
+    logic [$clog2(DEPTH)-1:0] `SVNET_REG_INPUT_E(read_address, read);
     logic `SVNET_REG_OUTPUT(read_data_valid);
-    logic [WIDTH-1:0] `SVNET_REG_OUTPUT(read_data);
+    logic [WIDTH-1:0] `SVNET_REG_OUTPUT_E(read_data, read_data_valid_d);
     logic [DEPTH-1:0][WIDTH-1:0] ram =
     `ifndef SVNET_NO_RESET 'x `else '0 `endif;
 

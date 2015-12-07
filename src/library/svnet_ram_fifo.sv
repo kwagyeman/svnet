@@ -126,6 +126,6 @@ logic [$clog2(depth)-0:0] name``_free_space, name``_used_space; \
 logic name``_write, name``_read; \
 svnet_ram_fifo #(.WIDTH($bits(name``_read_data)), .DEPTH(depth)) \
 name``_ram_fifo (.clk(clk), .rst_n(rst_n), \
-.write_data(name``_write_data), .read_data(name``_read_data) \
+.write_data(name``_write_data), .read_data(name``_read_data), \
 .free_space(name``_free_space), .used_space(name``_used_space), \
 .write(name``_write), .read(name``_read))

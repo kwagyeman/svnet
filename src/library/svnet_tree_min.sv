@@ -14,7 +14,7 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-module svent_tree_add
+module svent_tree_min
 #(
     WIDTH = 1,
     COUNT = 1
@@ -26,7 +26,7 @@ module svent_tree_add
     input logic [COUNT-1:0][WIDTH-1:0] i_data,
 
     output logic o_data_valid,
-    output logic [$clog2(COUNT)+WIDTH-1:0] o_data
+    output logic [WIDTH-1:0] o_data
 );
 
     generate if(COUNT == 1) begin
@@ -36,7 +36,7 @@ module svent_tree_add
         i_data_valid);
 
         logic `SVNET_REG_OUTPUT(o_data_valid);
-        logic [$clog2(COUNT)+WIDTH-1:0] `SVNET_REG_OUTPUT_E(o_data,
+        logic [WIDTH-1:0] `SVNET_REG_OUTPUT_E(o_data,
         o_data_valid_d);
 
         always_comb begin
@@ -51,20 +51,21 @@ module svent_tree_add
         i_data_valid);
 
         logic `SVNET_REG_OUTPUT(o_data_valid);
-        logic [$clog2(COUNT)+WIDTH-1:0] `SVNET_REG_OUTPUT_E(o_data,
+        logic [WIDTH-1:0] `SVNET_REG_OUTPUT_E(o_data,
         o_data_valid_d);
 
         always_comb begin
             o_data_valid_d = i_data_valid_q;
-            o_data_d = $unsigned($signed(i_data_q[0]) + $signed(i_data_q[1]));
+            o_data_d = $unsigned(`SVNET_MIN($signed(i_data_q[0]),
+            $signed(i_data_q[1])));
         end
 
     end else begin
 
         localparam COUNT_A = (COUNT + 0) / 2;
         localparam COUNT_B = (COUNT + 1) / 2;
-        localparam O_WIDTH_A = $clog2(COUNT_A) + WIDTH;
-        localparam O_WIDTH_B = $clog2(COUNT_B) + WIDTH;
+        localparam O_WIDTH_A = WIDTH;
+        localparam O_WIDTH_B = WIDTH;
 
         logic `SVNET_REG(i_data_valid_a);
         logic [O_WIDTH_A-1:0] `SVNET_REG_E(i_data_a, i_data_valid_a);
@@ -73,7 +74,7 @@ module svent_tree_add
         logic [O_WIDTH_B-1:0] `SVNET_REG_E(i_data_b, i_data_valid_b);
 
         logic `SVNET_REG_OUTPUT(o_data_valid);
-        logic [$clog2(COUNT)+WIDTH-1:0] `SVNET_REG_OUTPUT_E(o_data,
+        logic [WIDTH-1:0] `SVNET_REG_OUTPUT_E(o_data,
         o_data_valid_d);
 
         valid_error_0 : assert property(@(posedge clk) disable iff (!rst_n)
@@ -84,15 +85,16 @@ module svent_tree_add
 
         always_comb begin
             o_data_valid_d = i_data_valid_a_q;
-            o_data_d = $unsigned($signed(i_data_a_q) + $signed(i_data_b_q));
+            o_data_d = $unsigned(`SVNET_MIN($signed(i_data_a_q),
+            $signed(i_data_b_q)));
         end
 
-        svent_tree_add
+        svent_tree_min
         #(
             .WIDTH(WIDTH),
             .COUNT(COUNT_A)
         )
-        svent_tree_add_a
+        svent_tree_min_a
         (
             .clk(clk),
             .rst_n(rst_n),
@@ -102,12 +104,12 @@ module svent_tree_add
             .o_data(i_data_a)
         );
 
-        svent_tree_add
+        svent_tree_min
         #(
             .WIDTH(WIDTH),
             .COUNT(COUNT_B)
         )
-        svent_tree_add_b
+        svent_tree_min_b
         (
             .clk(clk),
             .rst_n(rst_n),
@@ -119,15 +121,15 @@ module svent_tree_add
 
     end endgenerate
 
-endmodule : svent_tree_add
+endmodule : svent_tree_min
 
-`define SVNET_TREE_ADD_DELAY(count) ($clog2(count) * 2)
+`define SVNET_TREE_MIN_DELAY(count) ($clog2(count) * 2)
 
-`define SVNET_TREE_ADD(name, width, count) \
+`define SVNET_TREE_MIN(name, width, count) \
 logic name``_i_data_valid, name``_o_data_valid; \
 logic [(count)-1:0][(width)-1:0] name``_i_data; \
-logic [$clog2(count)+(width)-1:0] name``_o_data; \
-svnet_tree_add #(.WIDTH(width), .COUNT(count)) \
-name``_tree_add (.clk(clk), .rst_n(rst_n), \
+logic [(width)-1:0] name``_o_data; \
+svnet_tree_min #(.WIDTH(width), .COUNT(count)) \
+name``_tree_min (.clk(clk), .rst_n(rst_n), \
 .i_data_valid(name``_i_data_valid), .i_data(name``_i_data), \
 .o_data_valid(name``_o_data_valid), .o_data(name``_o_data))

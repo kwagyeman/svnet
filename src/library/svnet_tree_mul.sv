@@ -22,25 +22,42 @@ module svent_tree_mul_int
 (
     input logic clk, rst_n,
 
+    input logic i_data_valid,
     input logic [COUNT-1:0][WIDTH-1:0] i_data,
+
+    output logic o_data_valid,
     output logic [(COUNT*WIDTH)-1:0] o_data
 );
 
     generate if(COUNT == 1) begin
 
-        logic [COUNT-1:0][WIDTH-1:0] `SVNET_REG_INPUT(i_data);
-        logic [(COUNT*WIDTH)-1:0] `SVNET_REG_OUTPUT(o_data);
+        logic `SVNET_REG_INPUT(i_data_valid);
+        logic [COUNT-1:0][WIDTH-1:0] `SVNET_REG_INPUT_E(i_data,
+        i_data_valid);
 
-        always_comb o_data_d =
-        i_data_q;
+        logic `SVNET_REG_OUTPUT(o_data_valid);
+        logic [(COUNT*WIDTH)-1:0] `SVNET_REG_OUTPUT_E(o_data,
+        o_data_valid_d);
+
+        always_comb begin
+            o_data_valid_d = i_data_valid_q;
+            o_data_d = i_data_q;
+        end
 
     end else if(COUNT == 2) begin
 
-        logic [COUNT-1:0][WIDTH-1:0] `SVNET_REG_INPUT(i_data);
-        logic [(COUNT*WIDTH)-1:0] `SVNET_REG_OUTPUT(o_data);
+        logic `SVNET_REG_INPUT(i_data_valid);
+        logic [COUNT-1:0][WIDTH-1:0] `SVNET_REG_INPUT_E(i_data,
+        i_data_valid);
 
-        always_comb o_data_d =
-        $unsigned($signed(i_data_q[0]) * $signed(i_data_q[1]));
+        logic `SVNET_REG_OUTPUT(o_data_valid);
+        logic [(COUNT*WIDTH)-1:0] `SVNET_REG_OUTPUT_E(o_data,
+        o_data_valid_d);
+
+        always_comb begin
+            o_data_valid_d = i_data_valid_q;
+            o_data_d = $unsigned($signed(i_data_q[0]) * $signed(i_data_q[1]));
+        end
 
     end else begin
 
@@ -49,12 +66,26 @@ module svent_tree_mul_int
         localparam O_WIDTH_A = COUNT_A * WIDTH;
         localparam O_WIDTH_B = COUNT_B * WIDTH;
 
-        logic [O_WIDTH_A-1:0] `SVNET_REG(i_data_a);
-        logic [O_WIDTH_B-1:0] `SVNET_REG(i_data_b);
-        logic [(COUNT*WIDTH)-1:0] `SVNET_REG_OUTPUT(o_data);
+        logic `SVNET_REG(i_data_valid_a);
+        logic [O_WIDTH_A-1:0] `SVNET_REG_E(i_data_a, i_data_valid_a);
 
-        always_comb o_data_d =
-        $unsigned($signed(i_data_a_q) * $signed(i_data_b_q));
+        logic `SVNET_REG(i_data_valid_b);
+        logic [O_WIDTH_B-1:0] `SVNET_REG_E(i_data_b, i_data_valid_b);
+
+        logic `SVNET_REG_OUTPUT(o_data_valid);
+        logic [(COUNT*WIDTH)-1:0] `SVNET_REG_OUTPUT_E(o_data,
+        o_data_valid_d);
+
+        valid_error_0 : assert property(@(posedge clk) disable iff (!rst_n)
+        i_data_valid_a |-> i_data_valid_b);
+
+        valid_error_1 : assert property(@(posedge clk) disable iff (!rst_n)
+        i_data_valid_b |-> i_data_valid_a);
+
+        always_comb begin
+            o_data_valid_d = i_data_valid_a_q;
+            o_data_d = $unsigned($signed(i_data_a_q) * $signed(i_data_b_q));
+        end
 
         svent_tree_mul
         #(
@@ -65,7 +96,9 @@ module svent_tree_mul_int
         (
             .clk(clk),
             .rst_n(rst_n),
+            .i_data_valid(i_data_valid),
             .i_data(i_data[COUNT_A-1:0]),
+            .o_data_valid(i_data_valid_a),
             .o_data(i_data_a)
         );
 
@@ -78,7 +111,9 @@ module svent_tree_mul_int
         (
             .clk(clk),
             .rst_n(rst_n),
+            .i_data_valid(i_data_valid),
             .i_data(i_data[COUNT_B-1:COUNT_A-0]),
+            .o_data_valid(i_data_valid_b),
             .o_data(i_data_b)
         );
 
@@ -88,47 +123,10 @@ endmodule : svent_tree_mul_int
 
 `define SVNET_TREE_MUL_DELAY(count) ($clog2(count) * 2)
 
-module svnet_tree_mul
-#(
-    WIDTH = 1,
-    COUNT = 1
-)
-(
-    input logic clk, rst_n,
-
-    input logic i_data_valid,
-    input logic [COUNT-1:0][WIDTH-1:0] i_data,
-
-    output logic o_data_valid,
-    output logic [(COUNT*WIDTH)-1:0] o_data
-);
-
-    logic`SVNET_REG_OUTPUT_PIPELINE(o_data_valid,`SVNET_TREE_MUL_DELAY(COUNT));
-    always_comb o_data_valid_d = i_data_valid;
-
-    generate if(COUNT == 1) begin
-        always_comb o_data = i_data;
-    end else begin
-        svent_tree_mul_int
-        #(
-            .WIDTH(WIDTH),
-            .COUNT(COUNT)
-        )
-        svent_tree_mul_int_i
-        (
-            .clk(clk),
-            .rst_n(rst_n),
-            .i_data(i_data),
-            .o_data(o_data)
-        );
-    end endgenerate
-
-endmodule : svnet_tree_mul
-
 `define SVNET_TREE_MUL(name, width, count) \
 logic name``_i_data_valid, name``_o_data_valid; \
 logic [(count)-1:0][(width)-1:0] name``_i_data; \
-logic [((count)*(width))-1:0] name``_o_data \
+logic [((count)*(width))-1:0] name``_o_data; \
 svnet_tree_mul #(.WIDTH(width), .COUNT(count)) \
 name``_tree_mul (.clk(clk), .rst_n(rst_n), \
 .i_data_valid(name``_i_data_valid), .i_data(name``_i_data), \
